@@ -31,11 +31,12 @@ SHELL_CMD="TERMINATOR_SHELL_DIR='$SCRIPT_DIR' bash --rcfile '$SCRIPT_DIR/bash-in
 if tmux has-session -t "$SESSION" 2>/dev/null; then
     tmux source-file "$SCRIPT_DIR/tmux.conf"
     # Inherit the CWD from whichever Terminator tab the user was just in.
-    # client_activity is the last-interaction timestamp for each attached
-    # client; the most recently active client is the source tab.
-    CLIENT=$(tmux list-clients -F "#{client_activity} #{client_name}" \
+    # Sort clients by client_activity (last-interaction timestamp) to find the
+    # most recently active tab; use its session name as a valid display-message
+    # target (client names like /dev/pts/N are not valid pane targets).
+    ACTIVE_SESSION=$(tmux list-clients -F "#{client_activity} #{client_session}" \
         | sort -rn | head -1 | awk '{print $2}')
-    CWD=$(tmux display-message -t "$CLIENT" -p "#{pane_current_path}" 2>/dev/null)
+    CWD=$(tmux display-message -t "$ACTIVE_SESSION" -p "#{pane_current_path}" 2>/dev/null)
     # Create this tab's grouped session first (detached), then open a new
     # window inside it.  Grouped sessions have independent current-window
     # pointers, so new-window only advances THIS session's pointer — no race
