@@ -16,16 +16,11 @@ _terminator_age() {
 
 _terminator_update_status() {
     [ -z "$TMUX" ] && return
-    # Skip auto-update when the user has pinned a custom status on this window.
-    local custom
-    custom=$(tmux show-options -wqv @custom_status 2>/dev/null)
-    if [ -z "$custom" ]; then
-        local jobs_count
-        jobs_count=$(jobs 2>/dev/null | wc -l)
-        local dir="${PWD##*/}"
-        tmux rename-window -t "$TMUX_PANE" \
-            " $(hostname -s) | ${dir:-/} | ${jobs_count} job$( [ "$jobs_count" -ne 1 ] && echo s ) " 2>/dev/null
-    fi
+    local jobs_count
+    jobs_count=$(jobs 2>/dev/null | wc -l)
+    local dir="${PWD##*/}"
+    tmux rename-window -t "$TMUX_PANE" \
+        " $(hostname -s) | ${dir:-/} | ${jobs_count} job$( [ "$jobs_count" -ne 1 ] && echo s ) " 2>/dev/null
     tmux set-option -w -t "$TMUX_PANE" @tab_age " $(_terminator_age) " 2>/dev/null
     _TERMINATOR_NEXT_CMD=1  # arm the DEBUG trap for the next real command
 }
@@ -36,9 +31,6 @@ _terminator_debug() {
     [ "$_TERMINATOR_NEXT_CMD" != "1" ] && return
     _TERMINATOR_NEXT_CMD=0
     [ -z "$TMUX" ] && return
-    local custom
-    custom=$(tmux show-options -wqv @custom_status 2>/dev/null)
-    [ -n "$custom" ] && return
     local dir="${PWD##*/}"
     tmux rename-window -t "$TMUX_PANE" \
         " $(hostname -s) | ${dir:-/} | $BASH_COMMAND " 2>/dev/null
@@ -74,16 +66,13 @@ _terminator_ssh_hostname() {
 # Wrap ssh to show the remote hostname in the status bar for the duration of
 # the connection.  PROMPT_COMMAND restores auto-status when ssh returns.
 ssh() {
-    local remote_host custom dir jobs_count
+    local remote_host dir jobs_count
     remote_host=$(_terminator_ssh_hostname "$@")
     if [ -n "$remote_host" ] && [ -n "$TMUX" ]; then
-        custom=$(tmux show-options -wqv @custom_status 2>/dev/null)
-        if [ -z "$custom" ]; then
-            dir="${PWD##*/}"
-            jobs_count=$(jobs 2>/dev/null | wc -l)
-            tmux rename-window -t "$TMUX_PANE" \
-                " $remote_host | ${dir:-/} | ${jobs_count} job$( [ "$jobs_count" -ne 1 ] && echo s ) " 2>/dev/null
-        fi
+        dir="${PWD##*/}"
+        jobs_count=$(jobs 2>/dev/null | wc -l)
+        tmux rename-window -t "$TMUX_PANE" \
+            " $remote_host | ${dir:-/} | ${jobs_count} job$( [ "$jobs_count" -ne 1 ] && echo s ) " 2>/dev/null
     fi
     command ssh "$@"
 }

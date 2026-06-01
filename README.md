@@ -17,7 +17,6 @@ A custom shell command for the [Terminator](https://gnome-terminator.org/) termi
 - **Status bar** — always-visible green bar at the bottom showing hostname, current directory, number of background jobs, and the currently running command while it executes
 - **Tab age** — right side of the bar shows how long the tab has been open (e.g. `5m`, `2h`)
 - **Tab sync** — each Terminator tab maps 1-to-1 to a tmux window; opening a tab creates a window, closing a tab destroys it
-- **Custom status text** — `Ctrl-b S` lets you type arbitrary text into the bar; empty input resets to auto
 - **Mouse scrolling** — scroll wheel enters tmux copy mode for buffer browsing; full-screen apps (vim, less) keep their own scroll handling
 - **Clipboard integration** — mouse selections are automatically copied to the X11 clipboard so Ctrl-V / middle-click paste works outside tmux
 - **SSH hostname tracking** — when you `ssh` into a remote server the status bar automatically switches to the remote hostname for the duration of the connection, then reverts on return
@@ -59,12 +58,6 @@ Inside each pane, `bash-init.sh` is sourced as the rcfile. It:
 2. Adds a `PROMPT_COMMAND` hook that pushes `hostname | dir | N jobs` into the tmux user-variable `@auto_status` after each command.
 3. Adds a `DEBUG` trap that fires before each command runs and updates `@auto_status` to show the command name, giving live feedback while long-running programs execute.
 
-`tmux.conf` renders `@auto_status` (or `@custom_status` when set) in the status bar.
+`tmux.conf` renders `#{window_name}` (set via `rename-window`) in the status bar.
 
-## Keybindings
-
-| Shortcut | Action |
-|---|---|
-| `Ctrl-b S` | Prompt for custom status text; leave empty to reset to auto |
-
-The tmux prefix is the default `Ctrl-b`. All other standard tmux keybindings work normally.
+The tmux prefix is the default `Ctrl-b`. All standard tmux keybindings work normally.
