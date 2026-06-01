@@ -20,6 +20,7 @@ A custom shell command for the [Terminator](https://gnome-terminator.org/) termi
 - **Custom status text** — `Ctrl-b S` lets you type arbitrary text into the bar; empty input resets to auto
 - **Mouse scrolling** — scroll wheel enters tmux copy mode for buffer browsing; full-screen apps (vim, less) keep their own scroll handling
 - **Clipboard integration** — mouse selections are automatically copied to the X11 clipboard so Ctrl-V / middle-click paste works outside tmux
+- **SSH hostname tracking** — when you `ssh` into a remote server the status bar automatically switches to the remote hostname for the duration of the connection, then reverts on return
 - **OSC 8 hyperlinks** — clickable links from tools like `ls --hyperlink`, `git log`, `grep --hyperlink`, etc. work end-to-end through tmux to Terminator
 
 ## Requirements

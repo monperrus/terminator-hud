@@ -48,6 +48,46 @@ trap '_terminator_debug' DEBUG
 # Prepend to PROMPT_COMMAND so it runs before any user-defined hooks.
 PROMPT_COMMAND="_terminator_update_status${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
 
+# Extract the remote hostname from ssh argument list.
+# Skips option flags and their values; returns the [user@]host stripped of user@.
+_terminator_ssh_hostname() {
+    local skip_next=0
+    local arg
+    for arg; do
+        if (( skip_next )); then
+            skip_next=0
+            continue
+        fi
+        case "$arg" in
+            # Options that consume the next token as their value
+            -[bcDEeFIiJLlmOopQRSwW]) skip_next=1 ;;
+            # Options with value concatenated (e.g. -p22): skip, no next token
+            -[bcDEeFIiJLlmOopQRSwW]*) ;;
+            # Other flags: skip
+            -*) ;;
+            # First non-flag argument is [user@]host
+            *) echo "${arg##*@}"; return ;;
+        esac
+    done
+}
+
+# Wrap ssh to show the remote hostname in the status bar for the duration of
+# the connection.  PROMPT_COMMAND restores auto-status when ssh returns.
+ssh() {
+    local remote_host custom dir jobs_count
+    remote_host=$(_terminator_ssh_hostname "$@")
+    if [ -n "$remote_host" ] && [ -n "$TMUX" ]; then
+        custom=$(tmux show-options -wqv @custom_status 2>/dev/null)
+        if [ -z "$custom" ]; then
+            dir="${PWD##*/}"
+            jobs_count=$(jobs 2>/dev/null | wc -l)
+            tmux rename-window -t "$TMUX_PANE" \
+                " $remote_host | ${dir:-/} | ${jobs_count} job$( [ "$jobs_count" -ne 1 ] && echo s ) " 2>/dev/null
+        fi
+    fi
+    command ssh "$@"
+}
+
 # Kill the tmux window AND the grouped session when this shell exits
 # (e.g. Ctrl-D).  Killing only the window leaves the tmux client alive,
 # so the Terminator tab stays open.  Killing the grouped session
