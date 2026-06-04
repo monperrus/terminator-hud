@@ -18,7 +18,7 @@ _terminator_update_status() {
     [ -z "$TMUX" ] && return
     # Record CWD so new tabs can inherit it without relying on tmux client
     # timestamps, which are not updated by the terminal's tab-open keypress.
-    printf '%s' "$PWD" > "/tmp/terminal-hud-cwd-${UID}" 2>/dev/null
+    printf '%s' "$PWD" > "/tmp/terminal-hud-cwd-${UID}-${TMUX_PANE#%}" 2>/dev/null
     local jobs_count
     jobs_count=$(jobs 2>/dev/null | wc -l)
     local dir="${PWD##*/}"

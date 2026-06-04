@@ -31,10 +31,11 @@ SHELL_CMD="TERMINATOR_SHELL_DIR='$SCRIPT_DIR' bash --rcfile '$SCRIPT_DIR/bash-in
 if tmux has-session -t "$SESSION" 2>/dev/null; then
     tmux source-file "$SCRIPT_DIR/tmux.conf"
     # Inherit the CWD from whichever tab the user was most recently in.
-    # bash-init.sh writes $PWD to this file on every PROMPT_COMMAND, which is
-    # more reliable than querying tmux client timestamps: the tab-open keypress
-    # is handled by the terminal emulator and does not update client_activity.
-    CWD=$(cat "/tmp/terminal-hud-cwd-${UID}" 2>/dev/null)
+    # bash-init.sh writes $PWD per pane to /tmp/terminal-hud-cwd-UID-PANEID.
+    # Pick the most recently modified file so each tab's CWD is independent;
+    # a single shared file would be racy when multiple tabs write concurrently.
+    CWD=$(find /tmp -maxdepth 1 -name "terminal-hud-cwd-${UID}-*" -printf '%T@ %p\n' 2>/dev/null \
+        | sort -rn | head -1 | awk '{print $2}' | xargs -r cat 2>/dev/null)
     # Create this tab's grouped session first (detached), then open a new
     # window inside it.  Grouped sessions have independent current-window
     # pointers, so new-window only advances THIS session's pointer — no race
