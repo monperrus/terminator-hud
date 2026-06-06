@@ -30,14 +30,11 @@ SHELL_CMD="TERMINATOR_SHELL_DIR='$SCRIPT_DIR' bash --rcfile '$SCRIPT_DIR/bash-in
 
 if tmux has-session -t "$SESSION" 2>/dev/null; then
     tmux source-file "$SCRIPT_DIR/tmux.conf"
-    # Inherit the CWD from the tab that had focus before this one opened.
-    # tmux.conf records @last_focused_pane on every pane-focus-in event.
-    # We read the bash PID for that pane and resolve its CWD directly from
-    # /proc, bypassing #{pane_current_path} which can track the wrong process.
-    _last_pane=$(tmux show-options -gqv @last_focused_pane 2>/dev/null)
-    _pane_pid=$(tmux display-message -t "$_last_pane" -p "#{pane_pid}" 2>/dev/null)
-    CWD=$(readlink "/proc/${_pane_pid}/cwd" 2>/dev/null)
-    unset _last_pane _pane_pid
+    # Inherit the CWD from whichever tab last showed a prompt.
+    # bash-init.sh writes $PWD to /tmp/terminal-hud-cwd-<pane-id> on every
+    # PROMPT_COMMAND — guaranteed to run after every cd, before Ctrl-N.
+    # Pick the most recently modified file across all panes.
+    CWD=$(ls -t /tmp/terminal-hud-cwd-* 2>/dev/null | head -1 | xargs cat 2>/dev/null)
     # Create this tab's grouped session first (detached), then open a new
     # window inside it.  Grouped sessions have independent current-window
     # pointers, so new-window only advances THIS session's pointer — no race
