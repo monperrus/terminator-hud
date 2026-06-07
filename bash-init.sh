@@ -16,9 +16,6 @@ _terminator_age() {
 
 _terminator_update_status() {
     [ -z "$TMUX" ] && return
-    # Persist CWD for new-tab inheritance.  Per-pane file (keyed by pane ID)
-    # avoids races between tabs writing simultaneously.
-    printf '%s' "$PWD" > "/tmp/terminal-hud-cwd-${TMUX_PANE//%/p}" 2>/dev/null
     local jobs_count
     jobs_count=$(jobs 2>/dev/null | wc -l)
     local dir="${PWD##*/}"
