@@ -11,10 +11,10 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Ensure the custom terminfo entry (tmux-256color + OSC 8 Hls/hle) is compiled
-# before tmux starts — panes will inherit TERM=terminator-256color from
+# before tmux starts — panes will inherit TERM=xterm-256color from
 # default-terminal in tmux.conf and need the entry in the database from day 1.
-_ti_src="$SCRIPT_DIR/terminfo/terminator-256color.ti"
-_ti_dst="$HOME/.terminfo/t/terminator-256color"
+_ti_src="$SCRIPT_DIR/terminfo/xterm-256color.ti"
+_ti_dst="$HOME/.terminfo/t/xterm-256color"
 if [ -f "$_ti_src" ] && [ ! -f "$_ti_dst" ]; then
     tic -x -o "$HOME/.terminfo" "$_ti_src" 2>/dev/null
 fi

@@ -1,4 +1,4 @@
-terminator-256color|tmux with 256 colors and OSC 8 hyperlinks,
+xterm-256color|tmux with 256 colors and OSC 8 hyperlinks,
 	use=tmux-256color,
 	Hls=\E]8;%p1%s;%p2%s\E\\,
 	hle=\E]8;;\E\\,
